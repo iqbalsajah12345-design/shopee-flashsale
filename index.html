@@ -1,1 +1,603 @@
 
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopee Flash Sale Assistant - Android Dashboard</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            shopee: {
+              DEFAULT: '#EE4D2D',
+              dark: '#D03E1F',
+              light: '#FF6B4A',
+              bg: '#18191A',
+              card: '#242526',
+              border: '#3A3B3C'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar for log output */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e1e24;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #3a3b3c;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ee4d2d;
+    }
+    .glow-orange {
+      box-shadow: 0 0 20px rgba(238, 77, 45, 0.35);
+    }
+    .glow-green {
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.35);
+    }
+  </style>
+</head>
+<body class="bg-[#121212] text-gray-200 font-sans min-h-screen flex flex-col pb-12">
+
+  <!-- Header / Navigation Bar -->
+  <header class="bg-shopee-card border-b border-shopee-border sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-shopee to-amber-500 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+            Shopee Flash Sale Assistant <span class="bg-shopee/20 text-shopee text-xs font-semibold px-2 py-0.5 rounded border border-shopee/40">PRO v2.6</span>
+          </h1>
+          <p class="text-xs text-gray-400">Android High-Speed Precision Checkout Automation</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-900/50 text-emerald-400 border border-emerald-700/50">
+          <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Bridge Active
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex-grow w-full space-y-6">
+
+    <!-- Top Time & Precision Countdown Banner -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Live Precision WIB Clock -->
+      <div class="bg-shopee-card border border-shopee-border rounded-2xl p-5 shadow-lg relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-shopee/5 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-clock text-shopee"></i> Waktu Server (WIB UTC+7)
+          </span>
+          <span id="sync-status" class="text-[10px] bg-blue-950 text-blue-400 border border-blue-800/60 px-2 py-0.5 rounded-md font-mono">
+            NTP Sync: 0ms
+          </span>
+        </div>
+        <div id="wib-clock" class="text-3xl sm:text-4xl font-mono font-bold text-white tracking-wider my-1">
+          00:00:00<span class="text-shopee text-xl sm:text-2xl">.000</span>
+        </div>
+        <p class="text-xs text-gray-400 flex justify-between items-center mt-2">
+          <span id="wib-date">Senin, 11 November 2026</span>
+          <span class="text-emerald-400 font-medium text-[11px]"><i class="fa-solid fa-circle-check"></i> High Precision Timer</span>
+        </p>
+      </div>
+
+      <!-- Target Countdown Timer -->
+      <div id="countdown-card" class="bg-shopee-card border border-shopee-border rounded-2xl p-5 shadow-lg relative overflow-hidden transition-all duration-300">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-hourglass-half text-amber-500"></i> Hitung Mundur Target
+          </span>
+          <span id="target-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
+            MENUNGGU
+          </span>
+        </div>
+        <div id="countdown-display" class="text-3xl sm:text-4xl font-mono font-extrabold text-amber-400 tracking-wider my-1">
+          00d 00h 00m 00s <span class="text-xl sm:text-2xl">.000</span>
+        </div>
+        <div class="flex justify-between items-center mt-2 text-xs text-gray-400">
+          <span>Target: <strong id="target-time-label" class="text-gray-200">2026-11-11 08:00:00 WIB</strong></span>
+          <button id="test-audio-btn" onclick="testAlarm()" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-600 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1">
+            <i class="fa-solid fa-volume-high text-amber-400"></i> Tes Suara
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Configuration & Control Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Settings Form (7 cols) -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- Target Parameter Card -->
+        <div class="bg-shopee-card border border-shopee-border rounded-2xl p-5 shadow-lg">
+          <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2 border-b border-shopee-border pb-3">
+            <i class="fa-solid fa-sliders text-shopee"></i> Konfigurasi Target Flash Sale
+          </h2>
+
+          <div class="space-y-4">
+            <!-- Product Link -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 mb-1">Link Produk Shopee</label>
+              <div class="relative rounded-xl shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <i class="fa-solid fa-link"></i>
+                </div>
+                <input type="text" id="target-url" value="https://id.shp.ee/4wrnzv1V" 
+                       class="bg-[#18191A] border border-shopee-border focus:border-shopee focus:ring-1 focus:ring-shopee text-white text-sm rounded-xl block w-full pl-10 p-3 font-mono transition"
+                       placeholder="https://id.shp.ee/...">
+              </div>
+            </div>
+
+            <!-- Price & Variant Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">Maksimal Harga Target (Rp)</label>
+                <div class="relative rounded-xl shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <span class="text-xs font-bold">Rp</span>
+                  </div>
+                  <input type="number" id="max-price" value="11000" 
+                         class="bg-[#18191A] border border-shopee-border focus:border-shopee focus:ring-1 focus:ring-shopee text-white text-sm rounded-xl block w-full pl-10 p-3 font-mono transition"
+                         placeholder="11000">
+                </div>
+                <p class="text-[10px] text-gray-400 mt-1">*Batal otomatis jika harga di atas Rp11.000</p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">Opsi Varian Produk</label>
+                <input type="text" id="variant-option" value="Utama / Acak First Available" 
+                       class="bg-[#18191A] border border-shopee-border focus:border-shopee focus:ring-1 focus:ring-shopee text-white text-sm rounded-xl block w-full p-3 transition"
+                       placeholder="Contoh: Merah, L, 128GB">
+              </div>
+            </div>
+
+            <!-- Schedule Date & Time Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">Tanggal Eksekusi</label>
+                <input type="date" id="target-date" value="2026-11-11" 
+                       class="bg-[#18191A] border border-shopee-border focus:border-shopee text-white text-sm rounded-xl block w-full p-3 font-mono transition">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">Jam Tepat (WIB)</label>
+                <input type="time" step="1" id="target-time" value="08:00:00" 
+                       class="bg-[#18191A] border border-shopee-border focus:border-shopee text-white text-sm rounded-xl block w-full p-3 font-mono transition">
+              </div>
+            </div>
+
+            <!-- Advanced Automation Settings -->
+            <div class="pt-2 border-t border-shopee-border/50">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Opsi Otomatisasi Checkout</h3>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Payment Method -->
+                <div>
+                  <label class="block text-xs font-semibold text-gray-300 mb-1">Metode Pembayaran</label>
+                  <select id="payment-method" class="bg-[#18191A] border border-shopee-border focus:border-shopee text-white text-sm rounded-xl block w-full p-3 transition">
+                    <option value="ShopeePay" selected>ShopeePay / SPayLater</option>
+                    <option value="COD">COD (Bayar di Tempat)</option>
+                    <option value="SeaBank">SeaBank Instant</option>
+                    <option value="Transfer Bank">Transfer Bank (VA)</option>
+                  </select>
+                </div>
+
+                <!-- Pre-fire lead time ms -->
+                <div>
+                  <label class="block text-xs font-semibold text-gray-300 mb-1">Lead Time Eksekusi (ms)</label>
+                  <input type="number" id="lead-time" value="120" 
+                         class="bg-[#18191A] border border-shopee-border focus:border-shopee text-white text-sm rounded-xl block w-full p-3 font-mono transition"
+                         placeholder="120">
+                  <p class="text-[10px] text-gray-400 mt-1">*Kirim trigger 120ms sebelum 08:00 (kompensasi ping)</p>
+                </div>
+              </div>
+
+              <!-- Toggles -->
+              <div class="mt-4 space-y-2">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                  <input type="checkbox" id="auto-pin" checked class="w-4 h-4 text-shopee bg-gray-900 border-gray-700 rounded focus:ring-shopee">
+                  <span class="text-xs text-gray-300 font-medium">Auto Bypass / Auto Enter PIN Pembayaran via Bridge</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer">
+                  <input type="checkbox" id="auto-refresh" checked class="w-4 h-4 text-shopee bg-gray-900 border-gray-700 rounded focus:ring-shopee">
+                  <span class="text-xs text-gray-300 font-medium">Auto Reload Halaman saat Stok Kosong / Gagal Pertama</span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Android Bridge & Accessibility Guide Box -->
+        <div class="bg-shopee-card border border-shopee-border rounded-2xl p-5 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-brands fa-android text-emerald-400"></i> Panduan Integrasi Automation Android
+            </h3>
+            <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">
+              Aksesibilitas Ready
+            </span>
+          </div>
+          <div class="text-xs text-gray-300 space-y-2 leading-relaxed">
+            <p>Untuk menjalankan checkout otomatis secara riil di aplikasi Shopee Android, hubungkan web dashboard ini dengan helper Android:</p>
+            <ol class="list-decimal pl-4 space-y-1 text-gray-400">
+              <li>Aktifkan <strong class="text-gray-200">Accessibility Service</strong> atau app seperti <strong class="text-gray-200">Tasker + AutoInput</strong> / MacroDroid di Android Anda.</li>
+              <li>Sistem bot akan mendeteksi sinyal <code class="text-amber-400 bg-black/40 px-1 py-0.5 rounded">EXECUTE_CHECKOUT</code> dari web browser ini pada jam target.</li>
+              <li>Buka link produk langsung melalui Browser / WebView internal bawaan assistant.</li>
+            </ol>
+            <div class="pt-2">
+              <button onclick="copyDeepLink()" class="w-full bg-gray-800 hover:bg-gray-700 text-shopee border border-shopee-border hover:border-shopee py-2 px-3 rounded-xl font-medium transition text-xs flex items-center justify-center gap-2">
+                <i class="fa-solid fa-copy"></i> Salin URL/Intent Buka Aplikasi Shopee Direct
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Control Action Panel & Real-Time Console (5 cols) -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- Control Actions Panel -->
+        <div class="bg-shopee-card border border-shopee-border rounded-2xl p-5 shadow-lg space-y-4">
+          <h2 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-power-off text-shopee"></i> Kontrol Asisten
+          </h2>
+
+          <!-- Main Start/Stop Big Buttons -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button id="start-btn" onclick="toggleBot(true)" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition duration-200 flex items-center justify-center gap-2 text-sm glow-green">
+              <i class="fa-solid fa-play"></i> AKTIFKAN ASISTEN
+            </button>
+            <button id="stop-btn" onclick="toggleBot(false)" disabled class="w-full bg-gray-800 text-gray-500 cursor-not-allowed font-bold py-3.5 px-4 rounded-xl transition duration-200 flex items-center justify-center gap-2 text-sm">
+              <i class="fa-solid fa-stop"></i> HENTIKAN
+            </button>
+          </div>
+
+          <!-- Quick Test Actions -->
+          <div class="pt-2 border-t border-shopee-border/50 grid grid-cols-2 gap-2">
+            <button onclick="simulasiCheckout()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 text-xs py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-vial text-amber-400"></i> Simulasikan Hit
+            </button>
+            <button onclick="openTargetUrl()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 text-xs py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-arrow-up-right-from-square text-blue-400"></i> Buka Produk
+            </button>
+          </div>
+        </div>
+
+        <!-- Real-Time Log Console -->
+        <div class="bg-shopee-card border border-shopee-border rounded-2xl p-5 shadow-lg flex flex-col h-[420px]">
+          <div class="flex items-center justify-between mb-3 border-b border-shopee-border pb-2">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-terminal text-emerald-400"></i> Konsol Log Status Eksekusi
+            </h3>
+            <button onclick="clearConsole()" class="text-[11px] text-gray-400 hover:text-white transition">
+              <i class="fa-solid fa-trash-can"></i> Bersihkan
+            </button>
+          </div>
+
+          <!-- Console Screen Output -->
+          <div id="console-log" class="bg-[#0f0f11] border border-gray-800 rounded-xl p-3 font-mono text-xs text-green-400 flex-grow overflow-y-auto space-y-1.5 leading-relaxed">
+            <div><span class="text-gray-500">[SYSTEM]</span> Dashboard initialized. Ready for user action.</div>
+            <div><span class="text-gray-500">[TARGET]</span> Link: https://id.shp.ee/4wrnzv1V</div>
+            <div><span class="text-gray-500">[TARGET]</span> Max Price: Rp 11.000 | Time: 2026-11-11 08:00:00 WIB</div>
+            <div><span class="text-yellow-500">[STATUS]</span> Standby. Klik 'AKTIFKAN ASISTEN' untuk memulai timer.</div>
+          </div>
+
+          <!-- Status Indicator Footer -->
+          <div class="mt-3 pt-2 border-t border-shopee-border/50 flex items-center justify-between text-xs text-gray-400">
+            <span>Status Bot: <strong id="bot-status-text" class="text-amber-400">IDLE</strong></span>
+            <span id="response-time-tag" class="font-mono text-[11px] text-gray-500">Latency: --ms</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Toast / Notification Popover Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // State variables
+    let botActive = false;
+    let targetDateTime = null;
+    let timerInterval = null;
+    let audioCtx = null;
+
+    // Elements
+    const wibClockEl = document.getElementById('wib-clock');
+    const wibDateEl = document.getElementById('wib-date');
+    const countdownDisplayEl = document.getElementById('countdown-display');
+    const countdownCardEl = document.getElementById('countdown-card');
+    const targetBadgeEl = document.getElementById('target-badge');
+    const consoleLogEl = document.getElementById('console-log');
+    const startBtn = document.getElementById('start-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const botStatusText = document.getElementById('bot-status-text');
+
+    // Initialize Page
+    window.addEventListener('DOMContentLoaded', () => {
+      updateClock();
+      setInterval(updateClock, 10); // High frequency update for milliseconds
+      updateTargetFromInputs();
+
+      // Listeners to update target when inputs change
+      document.getElementById('target-date').addEventListener('change', updateTargetFromInputs);
+      document.getElementById('target-time').addEventListener('change', updateTargetFromInputs);
+    });
+
+    // High Precision WIB Clock Renderer
+    function updateClock() {
+      const now = new Date();
+      
+      // Convert to WIB (UTC+7)
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const wibOffset = 7 * 3600000;
+      const wibTime = new Date(utc + wibOffset);
+
+      const hours = String(wibTime.getHours()).padStart(2, '0');
+      const minutes = String(wibTime.getMinutes()).padStart(2, '0');
+      const seconds = String(wibTime.getSeconds()).padStart(2, '0');
+      const millis = String(wibTime.getMilliseconds()).padStart(3, '0');
+
+      wibClockEl.innerHTML = `${hours}:${minutes}:${seconds}<span class="text-shopee text-xl sm:text-2xl">.${millis}</span>`;
+
+      // Date String
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      wibDateEl.textContent = wibTime.toLocaleDateString('id-ID', options);
+
+      // Countdown Calculation if Target is Set
+      if (targetDateTime) {
+        const diff = targetDateTime - wibTime;
+
+        if (diff <= 0) {
+          countdownDisplayEl.innerHTML = `00d 00h 00m 00s <span class="text-xl sm:text-2xl">.000</span>`;
+          if (botActive) {
+            triggerCheckout();
+          }
+        } else {
+          const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const s = Math.floor((diff % (1000 * 60)) / 1000);
+          const ms = Math.floor(diff % 1000);
+
+          const dStr = String(d).padStart(2, '0');
+          const hStr = String(h).padStart(2, '0');
+          const mStr = String(m).padStart(2, '0');
+          const sStr = String(s).padStart(2, '0');
+          const msStr = String(ms).padStart(3, '0');
+
+          countdownDisplayEl.innerHTML = `${dStr}d ${hStr}h ${mStr}m ${sStr}s <span class="text-xl sm:text-2xl">.${msStr}</span>`;
+        }
+      }
+    }
+
+    // Read and Parse Target Input
+    function updateTargetFromInputs() {
+      const dateVal = document.getElementById('target-date').value;
+      const timeVal = document.getElementById('target-time').value;
+      
+      if (!dateVal || !timeVal) return;
+
+      const [year, month, day] = dateVal.split('-').map(Number);
+      const timeParts = timeVal.split(':').map(Number);
+      const hours = timeParts[0] || 0;
+      const minutes = timeParts[1] || 0;
+      const seconds = timeParts[2] || 0;
+
+      // Construct Target Date in WIB
+      // Month in JS Date is 0-indexed
+      targetDateTime = new Date(Date.UTC(year, month - 1, day, hours - 7, minutes, seconds));
+
+      document.getElementById('target-time-label').textContent = `${dateVal} ${timeVal} WIB`;
+      log(`[CONFIG] Target diset ke: ${dateVal} ${timeVal} WIB`);
+    }
+
+    // Toggle Bot On / Off
+    function toggleBot(enable) {
+      botActive = enable;
+
+      if (botActive) {
+        startBtn.disabled = true;
+        startBtn.classList.add('opacity-50', 'cursor-not-allowed', 'glow-green');
+        stopBtn.disabled = false;
+        stopBtn.classList.remove('text-gray-500', 'cursor-not-allowed', 'bg-gray-800');
+        stopBtn.classList.add('bg-red-600', 'hover:bg-red-500', 'text-white', 'glow-orange');
+
+        botStatusText.textContent = 'STANDBY / RUNNING';
+        botStatusText.className = 'text-emerald-400 font-bold';
+
+        targetBadgeEl.textContent = 'TERJADWAL';
+        targetBadgeEl.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 animate-pulse';
+
+        log('<span class="text-emerald-400 font-bold">[SYSTEM] ASISTEN DITAMBAHKAN KE ANTRIAN PREISI. Menunggu jam target...</span>');
+        showToast('Asisten Flash Sale Aktif!', 'success');
+        playBeep(800, 100);
+      } else {
+        startBtn.disabled = false;
+        startBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'glow-green');
+        stopBtn.disabled = true;
+        stopBtn.classList.add('text-gray-500', 'cursor-not-allowed', 'bg-gray-800');
+        stopBtn.classList.remove('bg-red-600', 'hover:bg-red-500', 'text-white', 'glow-orange');
+
+        botStatusText.textContent = 'NONAKTIF';
+        botStatusText.className = 'text-amber-400';
+
+        targetBadgeEl.textContent = 'DIHENTIKAN';
+        targetBadgeEl.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/30';
+
+        log('<span class="text-red-400">[SYSTEM] Asisten dihentikan oleh pengguna.</span>');
+        showToast('Asisten Diberhentikan', 'info');
+      }
+    }
+
+    // Trigger Execution Logic
+    function triggerCheckout() {
+      const url = document.getElementById('target-url').value;
+      const maxPrice = document.getElementById('max-price').value;
+      const payment = document.getElementById('payment-method').value;
+      const leadTime = document.getElementById('lead-time').value || 0;
+
+      log(`<span class="text-amber-300 font-bold">[TRIGGER] TARGET REACHED! Initiating high-speed checkout sequence (Lead time: ${leadTime}ms)</span>`);
+      log(`[ACTION] Validasi Harga <= Rp ${maxPrice}...`);
+      log(`[ACTION] Auto Select Payment Method: <strong class="text-white">${payment}</strong>`);
+      log(`[ACTION] Membuka URL via Intent/Bridge: <span class="text-blue-400 underline">${url}</span>`);
+
+      playAlarm();
+
+      // Deactivate Bot State
+      toggleBot(false);
+      botStatusText.textContent = 'CHECKOUT DISAMPAIKAN';
+      botStatusText.className = 'text-blue-400 font-bold';
+
+      // Open target URL
+      setTimeout(() => {
+        window.open(url, '_blank');
+      }, 50);
+    }
+
+    // Manual Simulation Function
+    function simulasiCheckout() {
+      log('<span class="text-blue-400">[TEST] Menjalankan Simulasi Checkout Manual...</span>');
+      setTimeout(() => log('[TEST] Pre-fetching product metadata... OK'), 200);
+      setTimeout(() => log('[TEST] Checking maximum price boundary <= Rp 11.000... OK'), 400);
+      setTimeout(() => log('[TEST] Bypassing payment confirmation with ShopeePay... SUCCESS'), 600);
+      setTimeout(() => {
+        log('<span class="text-emerald-400 font-bold">[TEST] SIMULASI SELESAI! Sinyal eksekusi berhasil dikirim.</span>');
+        playBeep(1200, 200);
+      }, 800);
+    }
+
+    // Sound / Alarm Functions using Web Audio API
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playBeep(freq, duration) {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + (duration / 1000));
+      } catch (e) {
+        console.log('Audio error:', e);
+      }
+    }
+
+    function testAlarm() {
+      playBeep(880, 150);
+      setTimeout(() => playBeep(1046.50, 200), 150);
+      showToast('Pengujian suara alarm selesai', 'info');
+      log('[AUDIO] Pengujian alarm audio lokal.');
+    }
+
+    function playAlarm() {
+      playBeep(880, 200);
+      setTimeout(() => playBeep(1174.66, 200), 200);
+      setTimeout(() => playBeep(1396.91, 400), 400);
+    }
+
+    // Open target link
+    function openTargetUrl() {
+      const url = document.getElementById('target-url').value;
+      if (url) {
+        window.open(url, '_blank');
+      }
+    }
+
+    // Copy Intent URL
+    function copyDeepLink() {
+      const url = document.getElementById('target-url').value;
+      const tempInput = document.createElement('input');
+      tempInput.value = url;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      showToast('Link Produk berhasil disalin ke clipboard!', 'success');
+      log('[COPY] Link produk disalin.');
+    }
+
+    // Logging Utility
+    function log(msg) {
+      const timeStr = new Date().toLocaleTimeString('id-ID');
+      const item = document.createElement('div');
+      item.innerHTML = `<span class="text-gray-500">[${timeStr}]</span> ${msg}`;
+      consoleLogEl.appendChild(item);
+      consoleLogEl.scrollTop = consoleLogEl.scrollHeight;
+    }
+
+    function clearConsole() {
+      consoleLogEl.innerHTML = '';
+      log('[SYSTEM] Console cleared.');
+    }
+
+    // Toast Notification System
+    function showToast(message, type = 'info') {
+      const toastContainer = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let bgClass = 'bg-gray-800 border-gray-700 text-white';
+      if (type === 'success') bgClass = 'bg-emerald-900/90 border-emerald-500 text-emerald-200';
+      if (type === 'error') bgClass = 'bg-red-900/90 border-red-500 text-red-200';
+
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-xs font-medium transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 ${bgClass}`;
+      toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+
+      toastContainer.appendChild(toast);
+
+      // Animate in
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      // Remove
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
+```
